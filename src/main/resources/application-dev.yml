@@ -1,0 +1,112 @@
+spring:
+  application:
+    name: distributed-task-scheduler
+  
+  # H2 Database Configuration for Development
+  datasource:
+    url: jdbc:h2:mem:devdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+    
+    # HikariCP Connection Pool Configuration
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+  
+  # JPA Configuration for H2
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # Recreate schema on startup for development
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+    open-in-view: false
+  
+  # H2 Console for Development (accessible at /h2-console)
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+  
+  # Disable Flyway for development (using ddl-auto instead)
+  flyway:
+    enabled: false
+  
+  # Logging Configuration
+  logging:
+    level:
+      com.taskscheduler: DEBUG
+      com.taskscheduler.events: DEBUG
+      com.taskscheduler.service: DEBUG
+      com.taskscheduler.controller: DEBUG
+      com.taskscheduler.repository: DEBUG
+      org.springframework.web: INFO
+      org.hibernate.SQL: DEBUG
+      org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+      org.h2.server.web: INFO
+    pattern:
+      console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) [%cyan(%X{correlationId:-})] %yellow(%logger{36}) - %msg%n"
+      file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId:-}] %logger{36} - %msg%n"
+    file:
+      name: logs/task-scheduler-dev.log
+
+# Application-specific configuration for development
+task-scheduler:
+  # Scheduler Configuration - Enable for development testing
+  scheduler:
+    polling-interval-ms: 2000  # Slower polling for development
+    enabled: true
+  
+  # Worker Configuration - Enable for development testing
+  worker:
+    heartbeat-interval-ms: 30000
+    heartbeat-timeout-ms: 60000
+    enabled: true
+  
+  # Retry Configuration
+  retry:
+    default-max-retries: 2  # Fewer retries for faster development feedback
+    base-delay-ms: 1000
+    max-delay-ms: 30000  # Shorter max delay for development
+  
+  # Monitoring Configuration
+  monitoring:
+    failure-detection-interval-ms: 15000  # More frequent checks for development
+    metrics-collection-enabled: true
+    metrics-logging-interval-ms: 60000  # More frequent metrics logging
+  
+  # Logging Configuration - Enable all logging for development
+  logging:
+    correlation-id-enabled: true
+    structured-logging-enabled: true
+    event-logging-enabled: true
+    performance-logging-enabled: true
+
+# Server Configuration
+server:
+  port: 8080
+  servlet:
+    context-path: /api/v1
+
+# Management endpoints for development
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,h2-console
+  endpoint:
+    health:
+      show-details: always

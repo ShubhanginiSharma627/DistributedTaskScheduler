@@ -1,0 +1,110 @@
+spring:
+  application:
+    name: distributed-task-scheduler
+  
+  # Database Configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/task_scheduler
+    username: ${DB_USERNAME:task_scheduler}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+    
+    # HikariCP Connection Pool Configuration 
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+  
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+        connection:
+          isolation: 2  # READ_COMMITTED for task scheduling consistency
+    open-in-view: false
+  
+  # Flyway Configuration for database migrations
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+    clean-disabled: true
+    schemas: public
+  
+  # Logging Configuration (enhanced with structured logging)
+  logging:
+    level:
+      com.taskscheduler: INFO
+      com.taskscheduler.events: INFO
+      com.taskscheduler.service: INFO
+      com.taskscheduler.controller: INFO
+      com.taskscheduler.repository: DEBUG
+      org.springframework.web: INFO
+      org.hibernate.SQL: DEBUG
+      org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    pattern:
+      console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) [%cyan(%X{correlationId:-})] %yellow(%logger{36}) - %msg%n"
+      file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId:-}] %logger{36} - %msg%n"
+    file:
+      name: logs/task-scheduler.log
+
+# Application-specific configuration
+task-scheduler:
+  # Scheduler Configuration
+  scheduler:
+    polling-interval-ms: 1000
+    enabled: true
+  
+  # Worker Configuration  
+  worker:
+    heartbeat-interval-ms: 30000
+    heartbeat-timeout-ms: 60000
+    enabled: true
+  
+  # Retry Configuration
+  retry:
+    default-max-retries: 3
+    base-delay-ms: 1000
+    max-delay-ms: 300000
+  
+  # Monitoring Configuration
+  monitoring:
+    failure-detection-interval-ms: 30000
+    metrics-collection-enabled: true
+    metrics-logging-interval-ms: 300000
+  
+  # Logging Configuration
+  logging:
+    correlation-id-enabled: true
+    structured-logging-enabled: true
+    event-logging-enabled: true
+    performance-logging-enabled: true
+
+# Server Configuration
+server:
+  port: 8080
+  servlet:
+    context-path: /api/v1
+
+# Management endpoints for health checks
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
