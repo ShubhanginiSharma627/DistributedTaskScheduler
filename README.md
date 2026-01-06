@@ -342,15 +342,6 @@ mvn package -DskipTests
 docker build -t distributed-task-scheduler .
 ```
 
-### Code Quality
-
-The project follows these practices:
-- Comprehensive error handling
-- Transaction management with appropriate isolation levels
-- Optimistic locking for concurrency control
-- Property-based testing for correctness validation
-- Structured logging with correlation IDs
-
 ## Contributing
 
 1. Fork the repository
